@@ -4,6 +4,7 @@ from Game_logic_IN import Field
 from Game_logic_IN import Ships
 from random import randint
 
+#Создаём класс "Игрок", в котором будем хранить данные об игроках
 class Player:
     def __init__(self, field, enemy):
         self.field = field
@@ -12,6 +13,7 @@ class Player:
     def ask(self):
         raise NotImplementedError()
 
+#Создаём метод "Ход", в котором будем совершать ходы
     def move(self):
         while True:
             try:
@@ -21,17 +23,20 @@ class Player:
             except BoardException as e:
                 print(e)
 
+#Создаём класс "ИИ"
 class AI(Player):
     def ask(self):
-        i = Dot(randint(0, 5), randint(0, 5))
+        i = Dot(randint(0, 5), randint(0, 5))   #Рандомные координаты для выстрела
         print(f"Выстрел компьютера: {i.x + 1} {i.y + 1}")
         return i
 
+#Создаём класс "Игрок"
 class User(Player):
     def ask(self):
         while True:
             cords = input("Ваш выстрел: ").split()
 
+#Проверки на формат вводимых значений
             if len(cords) != 2:
                 print("Неверный ввод! Введите только 2 координаты!")
                 continue
@@ -46,22 +51,25 @@ class User(Player):
 
             return Dot(x - 1, y - 1)
 
+#Создаём класс "Игра"
 class Game:
     def __init__(self, size = 6):
         self.size = size
         player = self.random_field()
         computer = self.random_field()
-        computer.skip = True
+        computer.skip = True                #Поле компьютера скрыто
 
         self.ai = AI(computer, player)
         self.user = User(player, computer)
 
+#Создаём метод рандомного поля
     def random_field(self):
         field = None
         while field is None:
             field = self.random_ships()
         return field
 
+#Создаём метод рандомного размещения кораблей на поле
     def random_ships(self):
         ship_len = [3, 2, 2, 1, 1, 1, 1]
         field = Field(size=self.size)
@@ -69,17 +77,19 @@ class Game:
         for i in ship_len:
             while True:
                 count += 1
-                if count > 1000:
-                    return None
+                if count > 1000:            #Если полсле 1000 попыток корабли не размещены
+                    return None             #Обновляем полее и пробуем ещё раз
+#Размещаем корабли на поле. Берём начало корабля, размер корабля, напревление корабля на поле
                 ship = Ships(Dot(randint(0, self.size), randint(0, self.size)), i, randint(0, 1))
                 try:
                     field.add_ships(ship)
                     break
-                except BoardShipException:
+                except BoardShipException:  #Ошибка размещения кораблей
                     pass
-        field.start()
+        field.start()                       #Вызов метода начала игры
         return field
 
+#Создаём метод "Приветствие"
     def greet(self):
         print("------------------------")
         print("Добро пожаловать в игру:")
@@ -99,6 +109,7 @@ class Game:
         print("         Удачи!         ")
         print("------------------------")
 
+#Создаём метод подсказки для игрока
     def loop(self):
         count = 0
         while True:
@@ -109,6 +120,7 @@ class Game:
             print("Поле компьютера:")
             print(self.ai.field)
 
+#Проверка очерёдности ходов
             if count % 2 == 0:
                 print("------------------------")
                 print("Ходит пользователь.")
@@ -120,6 +132,7 @@ class Game:
             if repeat:
                 count -= 1
 
+#Проверка победителя
             if self.ai.field.count == 7:
                 print("------------------------")
                 print(self.ai.field)
@@ -133,6 +146,7 @@ class Game:
                 break
             count += 1
 
+#Метод для запуска игры в консоли
     def begin(self):
         self.greet()
         self.loop()

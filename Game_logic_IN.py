@@ -65,7 +65,7 @@ class Field:
             if self.out(i) or i in self.busy:
                 raise BoardShipException() #Ошибка размещения корабля на поле
         for i in ships.dots:
-            self.field[i.x][i.y] = "□"
+            self.field[i.x][i.y] = "□"      #Отрисовка корабля
             self.busy.append(i)
 
         self.ships.append(ships)
@@ -76,49 +76,52 @@ class Field:
         near = [(0, -1), (0, 0), (0, 1), (-1, -1), (-1, 0), (-1, 1), (1, -1), (1, 0), (1, 1)]
         for i in ships.dots:
             for ix, iy in near:
-                new = Dot(i.x + ix, i.y + iy)
-                if not(self.out(new)) and new not in self.busy:
+                new = Dot(i.x + ix, i.y + iy)           #Создаём координату для проверки размещения корабля и для отрисковки попадания
+                if not(self.out(new)) and new not in self.busy: #Если координата свободна
                     if verb:
-                        self.field[new.x][new.y] = "•"
+                        self.field[new.x][new.y] = "•" #Добавляем точки вокруг корабля
                     self.busy.append(new)
 
     def __str__(self):
         res = ""
         res += " |1|2|3|4|5|6|"
         for i, row in enumerate(self.field):
-            res += f"\n{i + 1}|" + "|".join(row) + "|"
+            res += f"\n{i + 1}|" + "|".join(row) + "|" #Создаём игровое поле
 
         if self.skip:
-            res = res.replace("□", "◌")
+            res = res.replace("□", "◌")                #Создаём игровое поле для игрока
         return res
 
+#Создаём метод для проверки нахождения координаты на поле
     def out(self, i):
         return not((0 <= i.x < self.size) and (0 <= i.y < self.size))
 
+#Создаём метод для совершения выстрелов
     def shoot(self, shot):
         if self.out(shot):
-            raise BoardOutException()
+            raise BoardOutException()   #Ошибка выстрела вне поля
         if shot in self.busy:
-            raise BoardShotException()
+            raise BoardShotException()  #Ошибка повторного выстрела в занятую точку
 
         self.busy.append(shot)
 
         for i in self.ships:
             if shot in i.dots:
                 i.hp -= 1
-                self.field[shot.x][shot.y] = "x"
+                self.field[shot.x][shot.y] = "x"    #Попадание по кораблю
                 if i.hp == 0:
                     self.count += 1
-                    self.contour(i, verb=True)
+                    self.contour(i, verb=True)      #Обрисовка контура корабля точками
                     print("Убит!")
-                    return False
+                    return True
                 else:
                     print("Ранил!")
                     return True
 
-        self.field[shot.x][shot.y] = "•"
+        self.field[shot.x][shot.y] = "•"            #Выстрел мимо
         print("Мимо!")
         return False
 
+#Создаём метод для запуска игры
     def start(self):
         self.busy = []
